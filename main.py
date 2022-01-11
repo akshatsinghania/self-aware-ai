@@ -61,7 +61,7 @@ class Brain:
         return f"Brain: size: {self.size}, density: {self.density}"
 
 
-class Perceptron:
+class Hebcal:
     def __init__(self, host, target):
         self.host=host
         self.target=target
@@ -99,11 +99,11 @@ if __name__ == "__main__":
     for _ in range(10):
         brains[0].step()
         brains[1].step()
-
-    perceptron = Perceptron(brains[0],brains[0])
-
-    print(perceptron.value)
+    print("Host",brains[0])
+    print("Target",brains[1])
+    perceptron = Hebcal(brains[0], brains[0])
+    print("Value before change",perceptron.value)
     brains[0].update_hebbians(np.ones((brains[0].size, brains[0].num_synapses), dtype=float))
     perceptron.recalculate(brains[0],brains[1])
-    print(perceptron.value)
+    print("Value after change",perceptron.value)
 
