@@ -7,6 +7,7 @@ import time
 
 from tqdm import tqdm
 import numpy as np
+from timer import call_repeatedly
 
 
 def sigmoid(x):
@@ -32,8 +33,8 @@ class Brain:
 
         self.neurons = np.arange(size, dtype=float)
 
-        #print(f"num_synapses: {self.num_synapses}")
-        #print(f"synaptic size: {size * self.num_synapses})")
+        # print(f"num_synapses: {self.num_synapses}")
+        # print(f"synaptic size: {size * self.num_synapses})")
         self.synapses = np.random.randint(0, size, (size, self.num_synapses), dtype=int)
         self.strengths = np.ones((size, self.num_synapses), dtype=float)
         self.hebbians = np.zeros((size, self.num_synapses), dtype=float)
@@ -54,8 +55,8 @@ class Brain:
     def load(self):
         return self.neurons[self.output_neurons]
 
-    def update_hebbians(self,value):
-        self.hebbians=value
+    def update_hebbians(self, value):
+        self.hebbians = value
 
     def __repr__(self) -> str:
         return f"Brain: size: {self.size}, density: {self.density}"
@@ -63,16 +64,46 @@ class Brain:
 
 class Hebcal:
     def __init__(self, host, target):
-        self.host=host
-        self.target=target
-        self.value=(target.hebbians+host.hebbians)/2
+        self.host = host
+        self.target = target
+        self.value = (target.hebbians + host.hebbians) / 2
 
-    def recalculate(self,host,target):
-        self.host=host
-        self.target=target
-        new_value = (host.hebbians+target.hebbians)/2
-        current_value = (new_value+self.value)/2
-        self.value=current_value
+    def recalculate(self, host, target):
+        self.host = host
+        self.target = target
+        new_value = (host.hebbians + target.hebbians) / 2
+        current_value = (new_value + self.value) / 2
+        self.value = current_value
+
+
+brains = [Brain(size=8, num_synapses=4, input_size=4, output_size=4),
+          Brain(size=8, num_synapses=4, input_size=4, output_size=4)]
+hebcals = []
+hebcals_index = []
+
+
+def check_for_hebcals_update():
+    for i in range(0, len(hebcals_index)):
+        hebcals[i].recalculate(brains[hebcals_index[i][0]], brains[hebcals_index[i][1]])
+        print("Recalculated Value")
+        print(hebcals[i].value)
+
+
+def get_brains_and_hebcals(size):
+    for i in range(1, size + 1):
+        brains.append(Brain(size=8, num_synapses=4, input_size=4, output_size=4))
+        if i > 1 and i < size:
+            hebcals_index.append([i - 1, i])
+        brains[0].update_hebbians(np.random.random(brains[0].input_size))
+
+    for i in hebcals_index:
+        hebcals.append(Hebcal(host=brains[i[0]], target=brains[i[1]]))
+
+    print(len(hebcals), " hebcals created")
+    for i in hebcals:
+        print(i.value)
+
+    call_repeatedly(20, check_for_hebcals_update)
 
 
 if __name__ == "__main__":
@@ -86,24 +117,4 @@ if __name__ == "__main__":
     #     brain.step()
     #     print(brain.load())
 
-
-
-    #Perceptron
-    brains=[Brain(size=8, num_synapses=4, input_size=4, output_size=4),Brain(size=8, num_synapses=4, input_size=4, output_size=4)]
-
-    host_data = np.random.random(brains[0].input_size)
-    target_data = np.random.random(brains[0].input_size)
-
-    brains[0].store(host_data)
-    brains[1].store(target_data)
-    for _ in range(10):
-        brains[0].step()
-        brains[1].step()
-    print("Host",brains[0])
-    print("Target",brains[1])
-    perceptron = Hebcal(brains[0], brains[0])
-    print("Value before change",perceptron.value)
-    brains[0].update_hebbians(np.ones((brains[0].size, brains[0].num_synapses), dtype=float))
-    perceptron.recalculate(brains[0],brains[1])
-    print("Value after change",perceptron.value)
-
+    get_brains_and_hebcals(10)
