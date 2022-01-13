@@ -1,11 +1,4 @@
-'''this is a neuron
-holds links to other neurons
-modifies link strengths according to conditions
-'''
-import random
-import time
-
-from tqdm import tqdm
+from numpy import random
 import numpy as np
 from timer import call_repeatedly
 
@@ -14,107 +7,67 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-class Brain:
-    def __init__(self, size, input_size, output_size, num_synapses=None, density=None):
-        assert num_synapses or density
-        assert not (num_synapses and density)
+neurons_size = 4
+neurons_ids = np.arange(1, 5)
+neurons_excites = random.random(size=4)
 
-        self.size = size
-        self.input_size = input_size
-        self.output_size = output_size
-        self.density = density
-        self.num_synapses = num_synapses
-        if density:
-            self.num_synapses = int(density * size)
-        self.num_synapses = num_synapses if not density else int(density * size)
+print("Neurons Size", neurons_size)
+print("Neurons Id", neurons_ids)
+print("Neurons Excites", neurons_excites)
+print()
 
-        self.input_neurons = np.random.randint(0, size, input_size, dtype=int)
-        self.output_neurons = np.random.randint(0, size, output_size, dtype=int)
+synapse_size = 4
+synapse_hosts = []
+synapse_target = []
 
-        self.neurons = np.arange(size, dtype=float)
+for i in range(1, neurons_size + 1):
+    for x in range(1, neurons_size + 1):
+        if i != x:
+            synapse_hosts.append(i)
+            synapse_target.append(x)
 
-        # print(f"num_synapses: {self.num_synapses}")
-        # print(f"synaptic size: {size * self.num_synapses})")
-        self.synapses = np.random.randint(0, size, (size, self.num_synapses), dtype=int)
-        self.strengths = np.ones((size, self.num_synapses), dtype=float)
-        self.hebbians = np.zeros((size, self.num_synapses), dtype=float)
-
-    def step(self):
-        self.step_neurons()
-        self.step_synapses()
-
-    def step_neurons(self):
-        self.neurons = sigmoid(np.sum(self.strengths, axis=1) / self.num_synapses)
-
-    def step_synapses(self):
-        self.strengths = self.hebbians * (self.neurons + self.neurons[self.synapses].T).T / 2
-
-    def store(self, data):
-        self.neurons[self.input_neurons] = data
-
-    def load(self):
-        return self.neurons[self.output_neurons]
-
-    def update_hebbians(self, value):
-        self.hebbians = value
-
-    def __repr__(self) -> str:
-        return f"Brain: size: {self.size}, density: {self.density}"
+synapse_size = len(synapse_hosts)
+synapse_weights = np.random.random(size=synapse_size)
+synapse_hebians = np.zeros(synapse_size)
 
 
-class Hebcal:
-    def __init__(self, host, target):
-        self.host = host
-        self.target = target
-        self.value = (target.hebbians + host.hebbians) / 2
-
-    def recalculate(self, host, target):
-        self.host = host
-        self.target = target
-        new_value = (host.hebbians + target.hebbians) / 2
-        current_value = (new_value + self.value) / 2
-        self.value = current_value
+def find_hebbian():
+    for indd in range(0, synapse_size):
+        host = synapse_hosts[indd]
+        target = synapse_target[indd]
+        last_average = synapse_hebians[indd]
+        new_average = (host + target) / 2
+        np.append(synapse_hebians, (last_average + new_average) / 2)
 
 
-brains = [Brain(size=8, num_synapses=4, input_size=4, output_size=4),
-          Brain(size=8, num_synapses=4, input_size=4, output_size=4)]
-hebcals = []
-hebcals_index = []
+find_hebbian()
+call_repeatedly(20, find_hebbian)
 
+print("Synapse size", 4)
+print("Synapse Host", synapse_hosts)
+print("Synapse Target", synapse_target)
+print("Synapse Hebians", synapse_hebians)
+print("Synapse Weights", synapse_weights)
+print()
 
-def check_for_hebcals_update():
-    for i in range(0, len(hebcals_index)):
-        hebcals[i].recalculate(brains[hebcals_index[i][0]], brains[hebcals_index[i][1]])
-        print("Recalculated Value")
-        print(hebcals[i].value)
+perceptron_size = synapse_size
+perceptron_outputs = []
+perceptron_weights = synapse_weights
+perceptron_losses = []
 
+for i in range(0, perceptron_size):
+    synapse_weights = np.random.random(size=synapse_size)
+    perceptron_weights = synapse_weights
 
-def get_brains_and_hebcals(size):
-    for i in range(1, size + 1):
-        brains.append(Brain(size=8, num_synapses=4, input_size=4, output_size=4))
-        if i > 1 and i < size:
-            hebcals_index.append([i - 1, i])
-        brains[0].update_hebbians(np.random.random(brains[0].input_size))
+    synapse_host_excite = neurons_excites[synapse_hosts[i] - 1]
+    synapse_target_excite = neurons_excites[synapse_target[i] - 1]
+    output = (synapse_host_excite * synapse_hebians[i]) + perceptron_weights[i]
+    loss = output - synapse_target_excite
+    perceptron_outputs.append(output)
+    perceptron_losses.append(loss)
+    neurons_excites[synapse_target[i] - 1] = output
 
-    for i in hebcals_index:
-        hebcals.append(Hebcal(host=brains[i[0]], target=brains[i[1]]))
-
-    print(len(hebcals), " hebcals created")
-    for i in hebcals:
-        print(i.value)
-
-    call_repeatedly(20, check_for_hebcals_update)
-
-
-if __name__ == "__main__":
-    # brain = Brain(size=8, num_synapses=4, input_size=4, output_size=4)
-    # print(brain)
-    #
-    # data = np.random.random(brain.input_size)
-    # print(data)
-    # brain.store(data)
-    # for _ in range(10):
-    #     brain.step()
-    #     print(brain.load())
-
-    get_brains_and_hebcals(10)
+print("Perceptron Size", perceptron_size)
+print("Perceptron Outputs", perceptron_outputs)
+print("Perceptron Weights", np.array(perceptron_weights))
+print("Perceptron Losses", np.array(perceptron_losses))
