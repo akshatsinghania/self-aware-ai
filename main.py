@@ -16,6 +16,29 @@ print("Neurons Id", neurons_ids)
 print("Neurons Excites", neurons_excites)
 print()
 
+"""Neurons stacks"""
+import numpy as np
+
+stacks_size = neurons_size
+stacks = np.zeros(stacks_size)
+
+
+def update_stacks(value, index):
+    stacks[index] = value
+    current_value = value
+    for index______ in range(index - 1, 0, -1):
+        current_value -= 1
+        stacks[index______] = current_value
+
+    current_value = value
+    for index______ in range(index + 1, stacks_size):
+        current_value -= 1
+        stacks[index______] = current_value
+
+
+print("Stacks size", stacks_size)
+"""Neurons Stacks"""
+
 synapse_size = 4
 synapse_hosts = []
 synapse_target = []
@@ -38,6 +61,7 @@ def find_hebbian():
         last_average = synapse_hebians[indd]
         new_average = (host + target) / 2
         np.append(synapse_hebians, (last_average + new_average) / 2)
+        # update_stacks()
 
 
 find_hebbian()
