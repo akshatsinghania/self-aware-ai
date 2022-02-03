@@ -8,8 +8,8 @@ def sigmoid(x):
 
 
 neurons_size = 4
-neurons_ids = np.arange(1, 5)
-neurons_excites = random.random(size=4)
+neurons_ids = np.arange(0, neurons_size)
+neurons_excites = random.random(size=neurons_size)
 
 print("Neurons Size", neurons_size)
 print("Neurons Id", neurons_ids)
@@ -17,34 +17,30 @@ print("Neurons Excites", neurons_excites)
 print()
 
 """Neurons stacks"""
-import numpy as np
-
-stacks_size = neurons_size
-stacks = np.zeros(stacks_size)
+neurons_stacks_size = neurons_size
+neurons_stacks = {}
 
 
-def update_stacks(value, index):
-    stacks[index] = value
-    current_value = value
-    for index______ in range(index - 1, 0, -1):
-        current_value -= 1
-        stacks[index______] = current_value
-
-    current_value = value
-    for index______ in range(index + 1, stacks_size):
-        current_value -= 1
-        stacks[index______] = current_value
+def update_neurons_stacks(value):
+    for key in neurons_stacks:
+        neurons_stacks[key] = 0
+    neurons_stacks[value] = 1
+    sorted_a = []
+    for key in neurons_stacks:
+        sorted_a.append(key)
+    # sorted_a.sort()
+    # print("Sorted_a", sorted_a)
 
 
-print("Stacks size", stacks_size)
+print("Stacks size", neurons_stacks_size)
 """Neurons Stacks"""
 
 synapse_size = 4
 synapse_hosts = []
 synapse_target = []
 
-for i in range(1, neurons_size + 1):
-    for x in range(1, neurons_size + 1):
+for i in range(0, neurons_size):
+    for x in range(0, neurons_size):
         if i != x:
             synapse_hosts.append(i)
             synapse_target.append(x)
@@ -53,15 +49,58 @@ synapse_size = len(synapse_hosts)
 synapse_weights = np.random.random(size=synapse_size)
 synapse_hebians = np.zeros(synapse_size)
 
+"""Hebbians stacks"""
+hebbians_stacks_size = synapse_hebians.size
+hebbians_stacks = {}
+
+
+def update_hebbians_stacks(value):
+    for key in hebbians_stacks:
+        hebbians_stacks[key] = 0
+    hebbians_stacks[value] = 1
+    sorted_a = []
+    for key in hebbians_stacks:
+        sorted_a.append(key)
+    # sorted_a.sort()
+    # print("Sorted_a", sorted_a)
+
+
+print("Stacks size", hebbians_stacks_size)
+"""Hebbians Stacks"""
+
+
+# def find_hebbian():
+#     for indd in range(0, synapse_size):
+#         host = synapse_hosts[indd]
+#         target = synapse_target[indd]
+#         last_average = synapse_hebians[indd]
+#         new_average = (host + target) / 2
+#         np.append(synapse_hebians, (last_average + new_average) / 2)
+#         update_stacks(indd,new_average)
 
 def find_hebbian():
+    neurons_connected_with_values = {}
     for indd in range(0, synapse_size):
-        host = synapse_hosts[indd]
-        target = synapse_target[indd]
+        host = neurons_excites[synapse_hosts[indd]]
+        target = neurons_excites[synapse_target[indd]]
         last_average = synapse_hebians[indd]
         new_average = (host + target) / 2
-        np.append(synapse_hebians, (last_average + new_average) / 2)
-        # update_stacks()
+        synapse_hebians[indd] = (last_average + new_average) / 2
+
+    for indd in range(0, len(synapse_hosts)):
+        neuron_index = synapse_hosts[indd]
+        synapse_value = synapse_hebians[indd]
+        if neuron_index in neurons_connected_with_values:
+            neurons_connected_with_values[neuron_index].append(synapse_value)
+        else:
+            neurons_connected_with_values[neuron_index] = [synapse_value]
+    for avvg in neurons_connected_with_values:
+        neurons_excites[avvg] = np.average(neurons_connected_with_values[avvg])
+    for values in neurons_excites:
+        update_neurons_stacks(values)
+
+    for values in synapse_hebians:
+        update_hebbians_stacks(values)
 
 
 find_hebbian()
