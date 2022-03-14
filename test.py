@@ -181,7 +181,7 @@ class VisionNeuron():
         #calculate the loss
         loss = output - target
         #calculate the gradient of the loss
-        gradient = self.sigmoid_derivative(output)
+        gradient = sigmoid_derivative(output)
         gradient *= loss
         #update the weights
         for i in range(0, self.input_size):
@@ -220,131 +220,90 @@ class VisionNeuron():
         return output * (1 - output)
         
 #a function that checks every value passed to it by the vision function and if new form a new neuron and load it to that neuron
-
-neurons_connected_with_new_neurons = []
-neurons_in_vision_range_with_repeats = {}
-
-def vision(data):
-    toReturn = []
-    for i in range(0, len(data)):
-        inputs = data[i]
-        if inputs in neurons_in_vision_range_with_repeats:
-            neurons_in_vision_range_with_repeats[inputs] += 1
-            toReturn.append(neurons_in_vision_range_with_repeats[inputs] - 1)
-        else:
-            neurons_in_vision_range_with_repeats[inputs] = 1
-            toReturn.append(len(neurons_in_vision_range_with_repeats) - 1)
-    return toReturn
-# print(neurons_connected_with_values)
-print()
-"""Vision"""
-
-"""visionStitch"""
-data = random.random(size=[4, 2])
-# print(data)
-neurons_connected_with_new_neurons = vision(data)
-print(neurons_connected_with_new_neurons)
-
-for i in range(0, len(neurons_connected_with_new_neurons)):
-    new_neuron = VisionNeuron(inputs=data[i], input_size=len(data[i]))
-    neurons_connected_with_new_neurons[i] = new_neuron
-
-print()
-"""visionStitch"""
-
-"""visionStitch"""
-data = random.random(size=[4, 2])
-# print(data)
-neurons_connected_with_new_neurons = vision(data)
-print(neurons_connected_with_new_neurons)
-
-for i in range(0, len(neurons_connected_with_new_neurons)):
-    new_neuron = VisionNeuron(inputs=data[i], input_size=len(data[i]))
-    neurons_connected_with_new_neurons[i] = new_neuron
-
-print()
-"""visionStitch"""
-
-
-def visionStitch(data):
-    toReturn = []
-    for i in range(0, len(data)):
-        inputs = data[i]
-        if inputs in neurons_in_vision_range_with_repeats:
-            neurons_in_vision_range_with_repeats[inputs] += 1
-            toReturn.append(neurons_in_vision_range_with_repeats[inputs] - 1)
-        else:
-            neurons_in_vision_range_with_repeats[inputs] = 1
-            toReturn.append(len(neurons_in_vision_range_with_repeats) - 1)
-    return toReturn
-
-print(synapse_hosts)
-print(synapse_target)
-print(neurons_in_vision_range_with_repeats)
-print(len(neurons_in_vision_range_with_repeats))
-
-for indd in range(0, len(synapse_hosts)):
-    new_neuron = VisionNeuron(inputs=np.array([neurons_excites[synapse_hosts[indd] - 1], neurons_excites[synapse_target[indd]]]), input_size=2)
-    new_neuron.checkActivation(neurons_connected_with_new_neurons[indd])
-    new_neuron.recalculateWeights()
-    neurons_connected_with_new_neurons[indd] = new_neuron
-
-def Visionlayer():
-    for i in range(0, len(synapse_hosts)):
-        new_neuron = VisionNeuron(inputs=np.array([neurons_excites[synapse_hosts[i] - 1], neurons_excites[synapse_target[i]]]), input_size=2)
-        new_neuron.checkActivation(neurons_connected_with_new_neurons[i])
-        new_neuron.recalculateWeights()
-        neurons_connected_with_new_neurons[i] = new_neuron
-    return neurons_connected_with_new_neurons
-
-def Feeder(inputs):
-    for i in range(0, len(inputs)):
-        neurons_excites[i] = inputs[i]
-    for i in range(0, len(neurons_connected_with_new_neurons)):
-        neurons_connected_with_new_neurons[i].calculateOutput(inputs=inputs)
-    for i in range(0, len(neurons_connected_with_new_neurons)):
-        neurons_connected_with_new_neurons[i].checkActivation(neurons_connected_with_new_neurons[i])
-    return neurons_connected_with_new_neurons
-
-def NeuralNet(inputs, target, learning_rate, epochs):
-    for i in range(0, epochs):
-        neurons_connected_with_new_neurons = Visionlayer()
-        for i in range(0, len(neurons_connected_with_new_neurons)):
-            neurons_connected_with_new_neurons[i].optimizer(inputs=inputs[i], target=target[i], learning_rate=learning_rate, epochs=epochs)
-    return neurons_connected_with_new_neurons
-
-def FeedForward(inputs, target, learning_rate, epochs):
-    for i in range(0, epochs):
-        neurons_connected_with_new_neurons = Feeder(inputs=inputs)
-        neurons_connected_with_new_neurons = NeuralNet(inputs=inputs, target=target, learning_rate=learning_rate, epochs=epochs)
-    return neurons_connected_with_new_neurons
-
-def FeedBack(inputs, target, learning_rate, epochs):
-    for i in range(0, epochs):
-        neurons_connected_with_new_neurons = Feeder(inputs=inputs)
-        for i in range(0, len(neurons_connected_with_new_neurons)):
-            neurons_connected_with_new_neurons[i].optimizer(inputs=inputs[i], target=target[i], learning_rate=learning_rate, epochs=epochs)
-    return neurons_connected_with_new_neurons
+def vision_function(inputs, input_size):
+    neurons = []
+    for i in range(0, input_size):
+        if inputs[i] not in neurons:
+            neurons.append(inputs[i])
+    neurons_size = len(neurons)
+    neurons_ids = np.arange(0, neurons_size)
+    neurons_excites = random.randint(0,size=neurons_size)
+    for i in range(0, neurons_size):
+        neurons[i] = VisionNeuron(inputs=inputs, input_size=input_size)
+        # print("Neuron", i, "Excite", neurons[i].excite)
+        # print("Neuron", i, "Output", neurons[i].output)
+    return neurons
     
-#run test
+def Feeder(inputs, input_size):
+    neurons = vision_function(inputs, input_size)
+    for i in range(0, input_size):
+        for j in range(0, input_size):
+            neurons[i].checkActivation(neurons[j])
+    return neurons
+    
+def Feeder_with_weights(inputs, input_size):
+    neurons = Feeder(inputs, input_size)
+    for i in range(0, input_size):
+        for j in range(0, input_size):
+            if neurons[i].excite == 1 and neurons[j].excite == 1:
+                neurons[i].recalculateWeights()
+                neurons[j].recalculateWeights()
+                neurons[i].recalcuateBias()
+                neurons[j].recalcuateBias()
+                neurons[i].optimizer(inputs, inputs[j], 0.1, 100)
+                neurons[j].optimizer(inputs, inputs[i], 0.1, 100)
+                # print("Neuron", i, "Weights", neurons[i].weights)
+                # print("Neuron", j, "Weights", neurons[j].weights)
+    return neurons
+    
+def NeuralNet(inputs, input_size):
+    neurons = Feeder_with_weights(inputs, input_size)
+    for i in range(0, input_size):
+        neurons[i].excite = 0
+        neurons[i].calculateOutput(inputs=inputs)
+        # print("Neuron", i, "Excite", neurons[i].excite)
+        # print("Neuron", i, "Output", neurons[i].output)
+    return neurons
+    
+def FeedForward(x, input_size):
+    return NeuralNet(x, input_size)
+    
+def BackPropagation(x, input_size):
+    neurons = FeedForward(x, input_size)
+    for i in range(0, input_size):
+        neurons[i].calculateOutput(inputs=x)
+        for j in range(0, input_size):
+            neurons[i].checkActivation(neurons[j])
+        neurons[i].recalculateWeights()
+        neurons[i].recalcuateBias()
+        neurons[i].optimizer(x, x[j], 0.1, 100)
+        # print("Neuron", i, "Weights", neurons[i].weights)
+    return neurons
+    
+def Train(x, input_size, epochs):
+    for i in range(0, epochs):
+        neurons = BackPropagation(x, input_size)
+    return neurons
+    
+def Predict(x, input_size):
+    neurons = BackPropagation(x, input_size)
+    output = neurons[0].output
+    for i in range(1, input_size):
+        output += neurons[i].output
+    output /= input_size
+    return output
+    
+def main():
+    inputs = [0.1, 0.2, 0.6, 0.2]
+    input_size = len(inputs)
+    epochs = 4
+    # for i in range(0, input_size):
+    #     print("Neuron", i, "Excite", neurons[i].excite)
+    #     print("Neuron", i, "Output", neurons[i].output)
+    # print(FeedForward(inputs, input_size))
+    # print(BackPropagation(inputs, input_size))
+    # print(Train(inputs, input_size, epochs))
+    # print(Predict(inputs, input_size))
 
-inputs = [0, 1, 1, 0]
-target = [0, 1, 1, 0]
-learning_rate = 0.1
-epochs = 10
-
-feed_forward = FeedForward(inputs=inputs, target=target, learning_rate=learning_rate, epochs=epochs)
-feed_back = FeedBack(inputs=inputs, target=target, learning_rate=learning_rate, epochs=epochs)
-
-print("Feed Forward", feed_forward)
-print("Feed Back", feed_back)
-
-# print(neurons_excites)
-# print(neurons_connected_with_new_neurons)
-
-# for i in range(0, len(neurons_connected_with_new_neurons)):
-#     neurons_connected_with_new_neurons[i].optimizer(inputs=inputs[i], target=target[i], learning_rate=learning_rate, epochs=epochs)
-# print(neurons_excites)
-# print(neurons_connected_with_new_neurons)
-
-# for
+if __name__ == '__main__':
+    main()
