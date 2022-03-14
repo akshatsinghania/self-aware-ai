@@ -1,12 +1,15 @@
 from numpy import random
 import numpy as np
 from timer import call_repeatedly
-import ImageThing as ia
 
 
 #Sigmoid Function
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
+
+#a relu activation function
+def relu(self, x):
+    return np.maximum(0,x)
 
 #
 neurons_size = 4
@@ -181,7 +184,7 @@ class VisionNeuron():
         #calculate the loss
         loss = output - target
         #calculate the gradient of the loss
-        gradient = sigmoid_derivative(output)
+        gradient = relu_derivative(output)
         gradient *= loss
         #update the weights
         for i in range(0, self.input_size):
@@ -218,6 +221,14 @@ class VisionNeuron():
     
     def sigmoid_derivative(self, output):
         return output * (1 - output)
+
+    #a relu activation function
+    def relu(self, x):
+        return np.maximum(0,x)
+        
+    #derivative of a relu activation function
+    def relu_derivative(self, x):
+        return np.where(x <= 0, 0, 1)
         
 #a function that checks every value passed to it by the vision function and if new form a new neuron and load it to that neuron
 def vision_function(inputs, input_size):
@@ -297,7 +308,7 @@ def main():
     inputs = [0.1, 0.2, 0.6, 0.2]
     input_size = len(inputs)
     epochs = 4
-    # for i in range(0, input_size):
+    #for i in range(0, input_size):
     #     print("Neuron", i, "Excite", neurons[i].excite)
     #     print("Neuron", i, "Output", neurons[i].output)
     # print(FeedForward(inputs, input_size))
