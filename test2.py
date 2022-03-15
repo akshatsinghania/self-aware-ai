@@ -357,30 +357,3 @@ def train(images, labels):
     # print("Completed")
 
 train(images, labels)
-
-#test a single image 
-# image = image1[51]
-# neurons = Vision(image)
-# for i in range(0, neurons_size):
-#     print("Neuron", i, "Output", neurons[i].output)
-# print()
-
-#train the neural net
-
-#create a function that takes the output of the neural net and converts it to a number
-# def convert_output_to_number(output):
-#     return output
-
-#create a function that takes the output of the neural net and compares it to the real value
-# def compare_output_to_real_value(output):
-#     return 0
-
-#create a training function
-# def train(images, labels):
-#     for i in range(0, len(images)):
-#         image = images[i]
-#         label = labels[i]
-#         neurons = Vision(image)
-#         real_number = convert_output_to_number(label)
-#         loss = compare_output_to_real_value(neurons)
-#         for k
