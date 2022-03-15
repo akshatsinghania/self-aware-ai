@@ -18,7 +18,7 @@ def relu_derivative(x):
 #
 neurons_size = 4
 neurons_ids = np.arange(0, neurons_size)
-neurons_excites = random.randint(0,size=neurons_size)
+neurons_excites = random.random(size=neurons_size)
 
 print("Neurons Size", neurons_size)
 print("Neurons Id", neurons_ids)
