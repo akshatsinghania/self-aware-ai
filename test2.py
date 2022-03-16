@@ -276,84 +276,23 @@ def FeedForward(x, input_size):
     return NeuralNet(x, input_size)
     
 def BackPropagation(x, input_size):
-    neurons = FeedForward(x, input_size)
-    for i in range(0, input_size):
-        neurons[i].calculateOutput(inputs=x)
-        for j in range(0, input_size):
-            neurons[i].checkActivation(neurons[j])
-        neurons[i].recalculateWeights()
-        neurons[i].recalcuateBias()
-        neurons[i].optimizer(x, x[j], 0.1, 100)
-        # print("Neuron", i, "Weights", neurons[i].weights)
-    return neurons
- 
-#train the network on cifar image dataset
-import pickle
+    return Feeder_with_weights(x, input_size)
 
-#read the cifar data
-with open('cifar/data_batch_1', 'rb') as fo:
-    dict1 = pickle.load(fo, encoding='bytes')
-image1 = dict1[b'data']
-label1 = dict1[b'labels']
-
-#create a list of all the images in the cifar data
-images = []
-for i in range(0, len(image1)):
-    images.append(image1[i])
-
-#create a list of all the labels in the cifar data
-labels = []
-for i in range(0, len(label1)):
-    labels.append(label1[i])
+def main():
+    #using cifar dataset. the data set has 32x32 pixles in 3 channels
+    inputs = np.random.randint(0,255, size=(1000,32,32,3))
+    for i in range(0, inputs.shape[0]):
+        for layer in range(0, inputs.shape[3]):
+            inputs[i, :, :, layer] = FeedForward(inputs[i, :, :, layer], inputs.shape[2])
+    print("Inputs", inputs)
+    print("Inputs Shape", inputs.shape)
     
-#create a function that takes the image array and returns the neural net output
-def Vision(x):
-    return FeedForward(x, input_size=3072)
+    targets = np.random.randint(0,255, size=(1000,32,32,3))
+    for i in range(0, targets.shape[0]):
+        for layer in range(0, targets.shape[3]):
+            targets[i, :, :, layer] = BackPropagation(targets[i, :, :, layer], inputs.shape[2])
+    print("Targets", targets)
+    print("Targets Shape", targets.shape)
 
-#create a training function that trains the neural net
-def train(images, labels):
-    for i in range(0, len(images)):
-        image = images[i]
-        label = labels[i]
-        neurons = Vision(image)
-        loss = 0
-        for k in range(0, neurons_size):
-            if k == label:
-                expected = 1
-            else:
-                expected = 0
-            loss += (expected - neurons[k].output) ** 2
-        print("Loss", loss)
-        for k in range(0, neurons_size):
-            if k == label:
-                neurons[k].excite = 1
-            else:
-                neurons[k].excite = 0
-            neurons[k].recalculateWeights()
-            neurons[k].recalcuateBias()
-            neurons[k].optimizer(image, image[k], 0.1, 100)
-            # print("Neuron", k, "Weights", neurons[k].weights)
-    # for i in range(0, len(images)):
-    #     image = images[i]
-    #     label = labels[i]
-    #     neurons = Vision(image)
-    #     loss = 0
-    #     for k in range(0, neurons_size):
-    #         if k == label:
-    #             expected = 1
-    #         else:
-    #             expected = 0
-    #         loss += (expected - neurons[k].output) ** 2
-    #     print("Loss", loss)
-    #     for k in range(0, neurons_size):
-    #         if k == label:
-    #             neurons[k].excite = 1
-    #         else:
-    #             neurons[k].excite = 0
-    #         neurons[k].recalculateWeights()
-    #         neurons[k].recalcuateBias()
-    #         neurons[k].optimizer(image, image[k], 0.1, 100)
-    #         # print("Neuron", k, "Weights", neurons[k].weights)
-    # print("Completed")
-
-train(images, labels)
+if __name__ == '__main__':
+    main()
