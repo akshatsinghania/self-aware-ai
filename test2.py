@@ -228,18 +228,14 @@ class VisionNeuron():
         
 #a function that checks every value passed to it by the vision function and if new form a new neuron and load it to that neuron
 def vision_function(inputs, input_size):
-    neurons = []
-    for i in range(0, input_size):
-        if inputs[i] not in neurons:
-            neurons.append(inputs[i])
-    neurons_size = len(neurons)
-    neurons_ids = np.arange(0, neurons_size)
-    neurons_excites = random.randint(0,size=neurons_size)
-    for i in range(0, neurons_size):
-        neurons[i] = VisionNeuron(inputs=inputs, input_size=input_size)
-        # print("Neuron", i, "Excite", neurons[i].excite)
-        # print("Neuron", i, "Output", neurons[i].output)
-    return neurons
+    vision_neurons = []
+    #check if the inputs are in the vision neurons array
+    for i in range(0, len(vision_neurons)):
+        if vision_neurons[i].inputs == inputs:
+            return vision_neurons[i]
+    #if the inputs are not in the vision neurons array then create a new neuron
+    vision_neurons.append(VisionNeuron(inputs, input_size))
+    return vision_neurons[-1]
     
 def Feeder(inputs, input_size):
     neurons = vision_function(inputs, input_size)
